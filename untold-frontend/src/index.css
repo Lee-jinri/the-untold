@@ -1,0 +1,102 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Courier+Prime:wght@400;700&display=swap");
+
+:root {
+  --bg-primary: #0a0908;
+  --bg-secondary: #151312;
+  --bg-card: #1c1a18;
+  --border-color: #2e2a26;
+  --amber: #d97706;
+  --amber-light: #f5a623;
+  --amber-dim: #92600f;
+  --text-primary: #e8e3da;
+  --text-secondary: #a39c8f;
+  --text-muted: #6b6459;
+  --font-heading: "Playfair Display", serif;
+  --font-body: "Courier Prime", monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  background-image: radial-gradient(
+      circle at 20% 20%,
+      rgba(217, 119, 6, 0.03) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(217, 119, 6, 0.03) 0%,
+      transparent 40%
+    );
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  min-height: 100vh;
+}
+
+#root {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+h1 {
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  letter-spacing: 0.05em;
+  color: var(--amber-light);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
+  margin-bottom: 32px;
+}
+
+h2 {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+h3 {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  color: var(--amber-light);
+}
+
+p {
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font-family: var(--font-body);
+  background-color: transparent;
+  border: 1px solid var(--amber-dim);
+  color: var(--amber-light);
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  background-color: var(--amber);
+  border-color: var(--amber);
+  color: var(--bg-primary);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
