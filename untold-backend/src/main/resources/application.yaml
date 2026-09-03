@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/untold_db
+    username: postgres
+    password: ${DB_PASSWORD}
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate: 
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+app:
+  cors:
+    allowed-origin: http://localhost:5173
+
+nvidia:
+  api-key: ${NVIDIA_API_KEY}
+  model: google/gemma-4-31b-it
