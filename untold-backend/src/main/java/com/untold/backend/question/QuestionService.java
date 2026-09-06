@@ -2,6 +2,7 @@ package com.untold.backend.question;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -54,8 +55,11 @@ public class QuestionService {
             }
 		}
 		
-		int unlockedCount = sessionKeywordRepository.findByGameSession_id(sessionId).size();
-        boolean isSolved = unlockedCount >= allKeywords.size();
+		List<String> unlockedKeywords = sessionKeywordRepository.findByGameSession_Id(sessionId).stream()
+		        .map(sk -> sk.getKeyword().getKeywordText())
+		        .collect(Collectors.toList());
+
+		boolean isSolved = unlockedKeywords.size() >= allKeywords.size();
 
         if (isSolved && !session.isSolved()) {
             session.setSolved(true);
@@ -64,6 +68,6 @@ public class QuestionService {
 
         gameSessionRepository.save(session);
 
-        return new QuestionAnswerResponse(answer, unlockedCount, isSolved);
+        return new QuestionAnswerResponse(answer, unlockedKeywords, isSolved);
 	}
 }

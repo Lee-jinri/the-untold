@@ -1,6 +1,8 @@
 package com.untold.backend.session;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -39,16 +41,23 @@ public class GameSessionService {
 		GameSession session = gameSessionRepository.findById(sessionId)
 				.orElseThrow(() -> new ResourceNotFoundException("세션을 찾을 수 없습니다."));
 		
-	    int unlockedCount = sessionKeywordRepository.findByGameSession_id(sessionId).size();
 	    int totalKeywordCount = keywordRepository.findByGameCase_Id(session.getGameCase().getId()).size();
 
+	    List<String> unlockedKeywords = sessionKeywordRepository.findByGameSession_Id(sessionId).stream()
+	            .map(sk -> sk.getKeyword().getKeywordText())
+	            .collect(Collectors.toList());
+	    
+	    boolean solved = session.isSolved();
+	    String fullTruth = solved ? session.getGameCase().getFullTruth() : null;
+	    
 	    return new SessionProgressResponse(
 	            sessionId,
 	            session.getGameCase().getTitle(),
 	            session.getGameCase().getPremise(),
-	            unlockedCount,
 	            totalKeywordCount,
-	            session.isSolved()
+	            unlockedKeywords,
+	            session.isSolved(),
+	            fullTruth
 	    );
 	}
 }

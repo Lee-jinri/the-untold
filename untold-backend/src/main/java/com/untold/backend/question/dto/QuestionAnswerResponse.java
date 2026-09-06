@@ -1,16 +1,18 @@
 package com.untold.backend.question.dto;
 
+import java.util.List;
+
 import lombok.Getter;
 
 @Getter
 public class QuestionAnswerResponse {
 	private final String answer;
-	private final int unlockedCount;
+    private final List<String> unlockedKeywords;
 	private final boolean isSolved;
 	
-	public QuestionAnswerResponse(String answer, int unlockedCount, boolean isSolved) {
+	public QuestionAnswerResponse(String answer, List<String> unlockedKeywords, boolean isSolved) {
         this.answer = answer;
-        this.unlockedCount = unlockedCount;
+        this.unlockedKeywords = unlockedKeywords;
         this.isSolved = isSolved;
     }
 }
