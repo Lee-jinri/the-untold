@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { fetchSessionProgress } from "../api/sessionApi";
 import { askQuestion } from "../api/questionApi";
 import KeywordProgress from "../components/KeywordProgress";
+import { revealHint } from "../api/sessionApi";
 
 function GamePlay() {
   const { sessionId } = useParams();
@@ -10,12 +11,15 @@ function GamePlay() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showPremise, setShowPremise] = useState(false);
+  const [showHint1, setShowHint1] = useState(false);
+  const [showHint2, setShowHint2] = useState(false);
 
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [asking, setAsking] = useState(false);
   const inputRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const prevHintsRevealedRef = useRef(0);
 
   useEffect(() => {
     fetchSessionProgress(sessionId)
@@ -45,19 +49,10 @@ function GamePlay() {
 
     try {
       const result = await askQuestion(sessionId, question);
-
       setMessages((prev) => [...prev, { role: "ai", text: result.answer }]);
 
-      if (result.solved) {
-        const updatedProgress = await fetchSessionProgress(sessionId);
-        setProgress(updatedProgress);
-      } else {
-        setProgress((prev) => ({
-          ...prev,
-          unlockedKeywords: result.unlockedKeywords,
-          solved: result.solved,
-        }));
-      }
+      const updatedProgress = await fetchSessionProgress(sessionId);
+      setProgress(updatedProgress);
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -67,6 +62,20 @@ function GamePlay() {
       setAsking(false);
     }
   };
+
+  useEffect(() => {
+    if (!progress) return;
+
+    if (progress.hintsRevealed > prevHintsRevealedRef.current) {
+      if (progress.hintsRevealed === 1) {
+        setShowHint1(true);
+      } else if (progress.hintsRevealed === 2) {
+        setShowHint2(true);
+      }
+    }
+
+    prevHintsRevealedRef.current = progress.hintsRevealed;
+  }, [progress?.hintsRevealed]);
 
   if (loading) return <p>불러오는 중...</p>;
   if (error) return <p>{error}</p>;
@@ -132,43 +141,18 @@ function GamePlay() {
     );
   }
 
+  const handleRevealHint = async () => {
+    try {
+      await revealHint(sessionId);
+      const updatedProgress = await fetchSessionProgress(sessionId);
+      setProgress(updatedProgress);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div>
-      <div
-        style={{
-          position: "fixed",
-          bottom: "16px",
-          right: "16px",
-          maxWidth: "280px",
-          backgroundColor: "var(--bg-card)",
-          border: "1px solid var(--border-color)",
-          padding: "12px 16px",
-          fontSize: "0.75rem",
-        }}
-      >
-        <div
-          onClick={() => setShowPremise(!showPremise)}
-          style={{
-            cursor: "pointer",
-            color: "var(--amber-light)",
-            letterSpacing: "0.05em",
-          }}
-        >
-          사건 개요 {showPremise ? "접기 ▲" : "펼치기 ▼"}
-        </div>
-        {showPremise && (
-          <p
-            style={{
-              marginTop: "10px",
-              whiteSpace: "pre-line",
-              color: "var(--text-secondary)",
-            }}
-          >
-            {progress.premise}
-          </p>
-        )}
-      </div>
-
       <div style={{ maxWidth: "560px", margin: "0 auto" }}>
         <div style={{ marginBottom: "32px" }}>
           <Link
@@ -186,6 +170,132 @@ function GamePlay() {
         />
         {progress.solved && (
           <p style={{ color: "var(--amber-light)" }}>🎉 클리어!</p>
+        )}
+
+        <div
+          style={{
+            marginTop: "20px",
+            border: "1px solid var(--border-color)",
+            backgroundColor: "var(--bg-card)",
+            padding: "16px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+            힌트 {progress.hintsRevealed}/2 · 질문 {progress.questionCount}개
+          </span>
+          {progress.hintsRevealed < 2 && (
+            <button
+              onClick={handleRevealHint}
+              style={{ fontSize: "0.75rem", padding: "4px 12px" }}
+            >
+              힌트 보기
+            </button>
+          )}
+        </div>
+
+        <div
+          style={{
+            marginTop: "20px",
+            backgroundColor: "var(--bg-card)",
+            border: "1px solid var(--border-color)",
+            padding: "12px 16px",
+            fontSize: "0.75rem",
+          }}
+        >
+          <div
+            onClick={() => setShowPremise(!showPremise)}
+            style={{
+              cursor: "pointer",
+              color: "var(--amber-light)",
+              letterSpacing: "0.05em",
+            }}
+          >
+            사건 개요 {showPremise ? "▲" : "▼"}
+          </div>
+          {showPremise && (
+            <p
+              style={{
+                marginTop: "10px",
+                whiteSpace: "pre-line",
+                color: "var(--text-secondary)",
+              }}
+            >
+              {progress.premise}
+            </p>
+          )}
+        </div>
+
+        {progress.hint1 && (
+          <div
+            style={{
+              marginTop: "12px",
+              border: "1px solid var(--border-color)",
+              backgroundColor: "var(--bg-card)",
+              padding: "16px",
+            }}
+          >
+            <div
+              onClick={() => setShowHint1(!showHint1)}
+              style={{
+                cursor: "pointer",
+                color: "var(--amber-light)",
+                fontSize: "0.8rem",
+                letterSpacing: "0.05em",
+              }}
+            >
+              힌트 1 {showHint1 ? "▲" : "▼"}
+            </div>
+            {showHint1 && (
+              <p
+                style={{
+                  marginTop: "10px",
+                  whiteSpace: "pre-line",
+                  fontSize: "0.8rem",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                {progress.hint1}
+              </p>
+            )}
+          </div>
+        )}
+
+        {progress.hint2 && (
+          <div
+            style={{
+              marginTop: "12px",
+              border: "1px solid var(--border-color)",
+              backgroundColor: "var(--bg-card)",
+              padding: "16px",
+            }}
+          >
+            <div
+              onClick={() => setShowHint2(!showHint2)}
+              style={{
+                cursor: "pointer",
+                color: "var(--amber-light)",
+                fontSize: "0.8rem",
+                letterSpacing: "0.05em",
+              }}
+            >
+              힌트 2 {showHint2 ? "▲" : "▼"}
+            </div>
+            {showHint2 && (
+              <p
+                style={{
+                  marginTop: "10px",
+                  whiteSpace: "pre-line",
+                  fontSize: "0.8rem",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                {progress.hint2}
+              </p>
+            )}
+          </div>
         )}
 
         <div

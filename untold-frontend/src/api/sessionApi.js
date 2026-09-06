@@ -12,3 +12,19 @@ export async function fetchSessionProgress(sessionId) {
 
   return response.json();
 }
+
+export async function revealHint(sessionId) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/sessions/${sessionId}/hints`,
+    {
+      method: "POST",
+    }
+  );
+
+  if (!response.ok) {
+    const errorBody = await response.json();
+    throw new Error(errorBody.message);
+  }
+
+  return response.json();
+}
