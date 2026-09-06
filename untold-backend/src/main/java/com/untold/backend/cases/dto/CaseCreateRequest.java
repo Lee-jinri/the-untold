@@ -15,4 +15,6 @@ public class CaseCreateRequest {
     private String fullTruth;
     private Difficulty difficulty;
     private List<String> keywords;
+    private String hint1;
+    private String hint2;
 }

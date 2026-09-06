@@ -42,6 +42,12 @@ public class QuestionService {
 		
 		session.setQuestionCount(session.getQuestionCount() + 1);
 		
+		if(session.getQuestionCount() == 10 && session.getHintsRevealed() < 1) {
+			session.setHintsRevealed(1);
+		}else if(session.getQuestionCount() == 20 && session.getHintsRevealed() < 2) {
+			session.setHintsRevealed(2);
+		}
+		
 		List<Keyword> allKeywords = keywordRepository.findByGameCase_Id(session.getGameCase().getId());
 		for (Keyword keyword : allKeywords) {
 			boolean alreadyUnlocked = sessionKeywordRepository

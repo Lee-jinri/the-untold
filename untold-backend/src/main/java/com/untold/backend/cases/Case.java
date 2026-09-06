@@ -28,4 +28,10 @@ public class Case extends BaseEntity {
 	
 	@Enumerated(EnumType.STRING)
 	private Difficulty difficulty;
+	
+	@Column(name = "hint1", columnDefinition = "TEXT")
+	private String hint1;
+	
+	@Column(name = "hint2", columnDefinition = "TEXT")
+	private String hint2;
 }

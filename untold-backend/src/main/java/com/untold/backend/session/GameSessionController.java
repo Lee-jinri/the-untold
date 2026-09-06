@@ -32,4 +32,9 @@ public class GameSessionController {
 	public SessionProgressResponse getProgress(@PathVariable UUID sessionId) {
 		return gameSessionService.getProgress(sessionId);
 	}
+	
+	@PostMapping("/sessions/{sessionId}/hints")
+	public int revealHint(@PathVariable UUID sessionId) {
+		return gameSessionService.revealNextHint(sessionId);
+	}
 }

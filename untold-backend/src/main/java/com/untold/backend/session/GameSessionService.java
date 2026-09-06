@@ -50,6 +50,10 @@ public class GameSessionService {
 	    boolean solved = session.isSolved();
 	    String fullTruth = solved ? session.getGameCase().getFullTruth() : null;
 	    
+	    int hintsRevealed = session.getHintsRevealed();
+	    String hint1 = hintsRevealed >= 1 ? session.getGameCase().getHint1() : null;
+	    String hint2 = hintsRevealed >= 2 ? session.getGameCase().getHint2() : null;
+	    
 	    return new SessionProgressResponse(
 	            sessionId,
 	            session.getGameCase().getTitle(),
@@ -57,7 +61,23 @@ public class GameSessionService {
 	            totalKeywordCount,
 	            unlockedKeywords,
 	            session.isSolved(),
-	            fullTruth
+	            fullTruth,
+	            session.getQuestionCount(),
+	            hintsRevealed,
+	            hint1,
+	            hint2
 	    );
+	}
+	
+	public int revealNextHint(UUID sessionId) {
+		GameSession session = gameSessionRepository.findById(sessionId)
+				.orElseThrow(() -> new ResourceNotFoundException("세션을 찾을 수 없습니다."));
+		
+		if(session.getHintsRevealed() < 2) {
+			session.setHintsRevealed(session.getHintsRevealed() + 1);
+			gameSessionRepository.save(session);
+		}
+		
+		return session.getHintsRevealed();
 	}
 }

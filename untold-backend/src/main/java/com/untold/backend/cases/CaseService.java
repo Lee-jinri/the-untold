@@ -33,6 +33,9 @@ public class CaseService {
         newCase.setPremise(request.getPremise());
         newCase.setFullTruth(request.getFullTruth());
         newCase.setDifficulty(request.getDifficulty());
+        newCase.setHint1(request.getHint1());
+        newCase.setHint2(request.getHint2());
+        
         Case savedCase = caseRepository.save(newCase);
 		
         List<Keyword> keywords = request.getKeywords().stream()

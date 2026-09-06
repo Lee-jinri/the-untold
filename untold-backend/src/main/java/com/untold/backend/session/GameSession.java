@@ -31,5 +31,8 @@ public class GameSession extends BaseEntity {
 	@Column(name = "question_count", nullable = false)
 	private int questionCount = 0;
 	
+	@Column(name = "hints_revealed", nullable = false)
+	private int hintsRevealed = 0;
+	
 	private LocalDateTime endedAt;
 }
