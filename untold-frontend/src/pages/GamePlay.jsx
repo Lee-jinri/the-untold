@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchSessionProgress } from "../api/sessionApi";
 import { askQuestion } from "../api/questionApi";
+import KeywordProgress from "../components/KeywordProgress";
 
 function GamePlay() {
   const { sessionId } = useParams();
@@ -13,6 +14,8 @@ function GamePlay() {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [asking, setAsking] = useState(false);
+  const inputRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     fetchSessionProgress(sessionId)
@@ -20,6 +23,16 @@ function GamePlay() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [sessionId]);
+
+  useEffect(() => {
+    if (progress && !progress.solved) {
+      inputRef.current?.focus();
+    }
+  }, [progress]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleAsk = async (e) => {
     e.preventDefault();
@@ -32,12 +45,19 @@ function GamePlay() {
 
     try {
       const result = await askQuestion(sessionId, question);
+
       setMessages((prev) => [...prev, { role: "ai", text: result.answer }]);
-      setProgress((prev) => ({
-        ...prev,
-        unlockedCount: result.unlockedCount,
-        isSolved: result.isSolved,
-      }));
+
+      if (result.solved) {
+        const updatedProgress = await fetchSessionProgress(sessionId);
+        setProgress(updatedProgress);
+      } else {
+        setProgress((prev) => ({
+          ...prev,
+          unlockedKeywords: result.unlockedKeywords,
+          solved: result.solved,
+        }));
+      }
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -50,6 +70,67 @@ function GamePlay() {
 
   if (loading) return <p>불러오는 중...</p>;
   if (error) return <p>{error}</p>;
+
+  // 클리어 화면
+  if (progress.solved) {
+    return (
+      <div
+        style={{ maxWidth: "480px", margin: "80px auto", textAlign: "center" }}
+      >
+        <p
+          style={{
+            fontSize: "0.75rem",
+            letterSpacing: "0.1em",
+            color: "var(--amber-light)",
+          }}
+        >
+          사건 종결
+        </p>
+        <h2 style={{ marginTop: "12px" }}>{progress.caseTitle}</h2>
+        <p style={{ marginTop: "24px", color: "var(--text-secondary)" }}>
+          모든 키워드를 찾아냈습니다.
+        </p>
+        <div
+          style={{
+            marginTop: "32px",
+            padding: "24px",
+            border: "1px solid var(--border-color)",
+            backgroundColor: "var(--bg-card)",
+          }}
+        >
+          <p style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+            총 질문 수
+          </p>
+          <p
+            style={{
+              fontSize: "2rem",
+              color: "var(--amber-light)",
+              fontFamily: "var(--font-heading)",
+            }}
+          >
+            {progress.unlockedKeywords.length >= 0
+              ? messages.filter((m) => m.role === "user").length
+              : "-"}
+          </p>
+        </div>
+        <div
+          style={{
+            marginTop: "32px",
+            whiteSpace: "pre-line",
+            textAlign: "left",
+            fontSize: "0.85rem",
+          }}
+        >
+          {progress.fullTruth}
+        </div>
+        <div style={{ marginTop: "32px" }}>
+          <Link to="/">
+            <button>다른 사건 풀러 가기</button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -99,10 +180,11 @@ function GamePlay() {
         </div>
 
         <h2>{progress.caseTitle}</h2>
-        <p style={{ marginTop: "16px" }}>
-          키워드: {progress.unlockedCount}/{progress.totalKeywordCount}
-        </p>
-        {progress.isSolved && (
+        <KeywordProgress
+          unlockedKeywords={progress.unlockedKeywords}
+          totalCount={progress.totalKeywordCount}
+        />
+        {progress.solved && (
           <p style={{ color: "var(--amber-light)" }}>🎉 클리어!</p>
         )}
 
@@ -132,9 +214,7 @@ function GamePlay() {
                 alignSelf: m.role === "user" ? "flex-end" : "flex-start",
                 maxWidth: "80%",
                 backgroundColor:
-                  m.role === "user"
-                    ? "var(--amber-dim)"
-                    : "var(--bg-secondary)",
+                  m.role === "user" ? "#af7210" : "var(--bg-secondary)",
                 color:
                   m.role === "user"
                     ? "var(--bg-primary)"
@@ -146,6 +226,7 @@ function GamePlay() {
               {m.text}
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
 
         <form
@@ -153,10 +234,11 @@ function GamePlay() {
           style={{ display: "flex", gap: "8px", marginTop: "12px" }}
         >
           <input
+            ref={inputRef}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="질문을 입력하세요..."
-            disabled={asking || progress.isSolved}
+            disabled={asking || progress.solved}
             style={{
               flex: 1,
               padding: "10px",
@@ -164,9 +246,10 @@ function GamePlay() {
               border: "1px solid var(--border-color)",
               color: "var(--text-primary)",
               fontFamily: "var(--font-body)",
+              fontSize: "16px",
             }}
           />
-          <button type="submit" disabled={asking || progress.isSolved}>
+          <button type="submit" disabled={asking || progress.solved}>
             {asking ? "..." : "질문"}
           </button>
         </form>
