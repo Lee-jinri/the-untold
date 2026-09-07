@@ -1,18 +1,29 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { createCase } from "../api/caseApi";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { fetchAdminCaseById, updateCase } from "../api/adminApi";
 
-function CaseCreate() {
+function AdminCaseEdit() {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [title, setTitle] = useState("");
-  const [premise, setPremise] = useState("");
-  const [fullTruth, setFullTruth] = useState("");
-  const [hint1, setHint1] = useState("");
-  const [hint2, setHint2] = useState("");
-  const [difficulty, setDifficulty] = useState("NORMAL");
+  const [form, setForm] = useState(null);
   const [keywordsText, setKeywordsText] = useState("");
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (sessionStorage.getItem("isAdmin") !== "true") {
+      navigate("/admin");
+      return;
+    }
+    fetchAdminCaseById(id).then((data) => {
+      setForm(data);
+      setKeywordsText(data.keywords.join(", "));
+    });
+  }, [id]);
+
+  const handleChange = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,19 +33,11 @@ function CaseCreate() {
     const keywords = keywordsText
       .split(",")
       .map((k) => k.trim())
-      .filter((k) => k.length > 0);
+      .filter(Boolean);
 
     try {
-      const newCase = await createCase({
-        title,
-        premise,
-        fullTruth,
-        hint1,
-        hint2,
-        difficulty,
-        keywords,
-      });
-      navigate(`/cases/${newCase.id}`);
+      await updateCase(id, { ...form, keywords });
+      navigate("/admin/cases");
     } catch (err) {
       setError(err.message);
       setSubmitting(false);
@@ -52,55 +55,57 @@ function CaseCreate() {
     marginBottom: "20px",
   };
 
+  if (!form) return <p>불러오는 중...</p>;
+
   return (
-    <div>
-      <h2>새 사건 등록</h2>
+    <div style={{ maxWidth: "560px", margin: "0 auto" }}>
+      <h2>사건 수정</h2>
       <form onSubmit={handleSubmit}>
         <label>
           제목
           <input
             style={inputStyle}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={form.title}
+            onChange={(e) => handleChange("title", e.target.value)}
             required
           />
         </label>
 
         <label>
-          Premise (플레이어에게 보여줄 표면 스토리)
+          Premise
           <textarea
             style={{ ...inputStyle, minHeight: "120px" }}
-            value={premise}
-            onChange={(e) => setPremise(e.target.value)}
+            value={form.premise}
+            onChange={(e) => handleChange("premise", e.target.value)}
             required
           />
         </label>
 
         <label>
-          Full Truth (AI만 아는 전체 진실)
+          Full Truth
           <textarea
             style={{ ...inputStyle, minHeight: "160px" }}
-            value={fullTruth}
-            onChange={(e) => setFullTruth(e.target.value)}
+            value={form.fullTruth}
+            onChange={(e) => handleChange("fullTruth", e.target.value)}
             required
           />
         </label>
 
         <label>
-          힌트 1 (10번째 질문 후 또는 버튼 클릭시 공개)
+          힌트 1
           <textarea
             style={{ ...inputStyle, minHeight: "120px" }}
-            value={hint1}
-            onChange={(e) => setHint1(e.target.value)}
+            value={form.hint1 || ""}
+            onChange={(e) => handleChange("hint1", e.target.value)}
           />
         </label>
 
         <label>
-          힌트 2 (20번째 질문 후 또는 버튼 클릭시 공개)
+          힌트 2
           <textarea
             style={{ ...inputStyle, minHeight: "120px" }}
-            value={hint2}
-            onChange={(e) => setHint2(e.target.value)}
+            value={form.hint2 || ""}
+            onChange={(e) => handleChange("hint2", e.target.value)}
           />
         </label>
 
@@ -108,8 +113,8 @@ function CaseCreate() {
           난이도
           <select
             style={inputStyle}
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
+            value={form.difficulty}
+            onChange={(e) => handleChange("difficulty", e.target.value)}
           >
             <option value="EASY">EASY</option>
             <option value="NORMAL">NORMAL</option>
@@ -123,7 +128,6 @@ function CaseCreate() {
             style={inputStyle}
             value={keywordsText}
             onChange={(e) => setKeywordsText(e.target.value)}
-            placeholder="지하실, 가스, 도둑, 공범, 시체"
             required
           />
         </label>
@@ -131,11 +135,11 @@ function CaseCreate() {
         {error && <p style={{ color: "var(--amber)" }}>{error}</p>}
 
         <button type="submit" disabled={submitting}>
-          {submitting ? "등록하는 중..." : "사건 등록"}
+          {submitting ? "저장 중..." : "저장"}
         </button>
       </form>
     </div>
   );
 }
 
-export default CaseCreate;
+export default AdminCaseEdit;
