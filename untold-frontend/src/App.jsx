@@ -1,4 +1,5 @@
 import { Routes, Route, Link } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import CaseList from "./components/CaseList";
 import CaseDetail from "./pages/CaseDetail";
@@ -22,6 +23,7 @@ function App() {
         <Route path="/admin/cases" element={<AdminCaseList />} />
         <Route path="/admin/cases/:id/edit" element={<AdminCaseEdit />} />
         <Route path="/admin/cases/new" element={<AdminCaseCreate />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );
