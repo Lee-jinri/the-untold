@@ -32,18 +32,3 @@ export async function startGameSession(caseId) {
 
   return response.json();
 }
-
-export async function createCase(caseData) {
-  const response = await fetch(`${API_BASE_URL}/api/cases`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(caseData),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.json();
-    throw new Error(errorBody.message);
-  }
-
-  return response.json();
-}
