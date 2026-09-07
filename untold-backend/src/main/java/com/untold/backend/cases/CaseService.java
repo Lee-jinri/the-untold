@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.untold.backend.admin.dto.CaseAdminResponse;
+import com.untold.backend.admin.dto.CaseUpdateRequest;
 import com.untold.backend.cases.dto.CaseCreateRequest;
 import com.untold.backend.cases.dto.CaseDetailResponse;
 import com.untold.backend.cases.dto.CaseListItem;
@@ -78,5 +80,54 @@ public class CaseService {
 	    int keywordCount = keywordRepository.findByGameCase_Id(id).size();
 
 	    return new CaseDetailResponse(caseEntity, keywordCount);
+	}
+
+	public List<CaseAdminResponse> getAllCasesForAdmin() {
+		return caseRepository.findAll().stream()
+	            .map(c -> {
+	                List<String> keywords = keywordRepository.findByGameCase_Id(c.getId()).stream()
+	                        .map(Keyword::getKeywordText)
+	                        .collect(Collectors.toList());
+	                return new CaseAdminResponse(c, keywords);
+	            })
+	            .collect(Collectors.toList());
+	}
+
+	public CaseAdminResponse getCaseForAdmin(UUID id) {
+		Case aCase = caseRepository.findById(id)
+	            .orElseThrow(() -> new ResourceNotFoundException("사건을 찾을 수 없습니다: " + id));
+
+	    List<String> keywords = keywordRepository.findByGameCase_Id(id).stream()
+	            .map(Keyword::getKeywordText)
+	            .collect(Collectors.toList());
+
+	    return new CaseAdminResponse(aCase, keywords);
+	}
+
+	@Transactional
+	public Case updateCase(UUID id, CaseUpdateRequest request) {
+		Case aCase = caseRepository.findById(id)
+	            .orElseThrow(() -> new ResourceNotFoundException("사건을 찾을 수 없습니다: " + id));
+
+	    aCase.setTitle(request.getTitle());
+	    aCase.setPremise(request.getPremise());
+	    aCase.setFullTruth(request.getFullTruth());
+	    aCase.setHint1(request.getHint1());
+	    aCase.setHint2(request.getHint2());
+	    aCase.setDifficulty(request.getDifficulty());
+	    caseRepository.save(aCase);
+
+	    keywordRepository.deleteByGameCase_Id(id);
+	    List<Keyword> newKeywords = request.getKeywords().stream()
+	            .map(text -> {
+	                Keyword keyword = new Keyword();
+	                keyword.setGameCase(aCase);
+	                keyword.setKeywordText(text);
+	                return keyword;
+	            })
+	            .collect(Collectors.toList());
+	    keywordRepository.saveAll(newKeywords);
+
+	    return aCase;
 	}
 }
