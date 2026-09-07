@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'untold-frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
 
 env:
   AWS_REGION: ap-northeast-2
