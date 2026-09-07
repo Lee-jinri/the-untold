@@ -1,15 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { adminLogin } from "../api/adminApi";
 
 function AdminLogin() {
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: 나중에 JWT 로그인으로 교체
-    sessionStorage.setItem("isAdmin", "true");
-    navigate("/admin/cases");
+    setError(null);
+    try {
+      const { token } = await adminLogin(password);
+      sessionStorage.setItem("adminToken", token);
+      navigate("/admin/cases");
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -17,6 +24,7 @@ function AdminLogin() {
       style={{ maxWidth: "320px", margin: "100px auto", textAlign: "center" }}
     >
       <h2>관리자 로그인</h2>
+      {error && <p style={{ color: "var(--amber)" }}>{error}</p>}
       <form onSubmit={handleSubmit} style={{ marginTop: "24px" }}>
         <input
           type="password"

@@ -11,7 +11,7 @@ function AdminCaseEdit() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem("isAdmin") !== "true") {
+    if (!sessionStorage.getItem("adminToken")) {
       navigate("/admin");
       return;
     }

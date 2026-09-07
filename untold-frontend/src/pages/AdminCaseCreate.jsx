@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createCase } from "../api/caseApi";
+import { createCaseAdmin } from "../api/adminApi";
 
 function CaseCreate() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ function CaseCreate() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem("isAdmin") !== "true") {
+    if (!sessionStorage.getItem("adminToken")) {
       navigate("/admin");
       return;
     }
@@ -31,7 +31,7 @@ function CaseCreate() {
       .filter((k) => k.length > 0);
 
     try {
-      const newCase = await createCase({
+      const newCase = await createCaseAdmin({
         title,
         premise,
         fullTruth,

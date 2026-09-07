@@ -8,7 +8,7 @@ function AdminCaseList() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (sessionStorage.getItem("isAdmin") !== "true") {
+    if (!sessionStorage.getItem("adminToken")) {
       navigate("/admin");
       return;
     }
