@@ -3,8 +3,8 @@ spring:
     name: backend
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/untold_db
-    username: postgres
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/untold_db}
+    username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD}
 
   jpa:
@@ -18,7 +18,7 @@ spring:
 
 app:
   cors:
-    allowed-origin: http://localhost:5173
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173}
 
 anthropic:
   api-key: ${ANTHROPIC_API_KEY}
