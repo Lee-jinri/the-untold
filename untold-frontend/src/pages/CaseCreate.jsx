@@ -7,6 +7,8 @@ function CaseCreate() {
   const [title, setTitle] = useState("");
   const [premise, setPremise] = useState("");
   const [fullTruth, setFullTruth] = useState("");
+  const [hint1, setHint1] = useState("");
+  const [hint2, setHint2] = useState("");
   const [difficulty, setDifficulty] = useState("NORMAL");
   const [keywordsText, setKeywordsText] = useState("");
   const [error, setError] = useState(null);
@@ -27,6 +29,8 @@ function CaseCreate() {
         title,
         premise,
         fullTruth,
+        hint1,
+        hint2,
         difficulty,
         keywords,
       });
@@ -79,6 +83,24 @@ function CaseCreate() {
             value={fullTruth}
             onChange={(e) => setFullTruth(e.target.value)}
             required
+          />
+        </label>
+
+        <label>
+          힌트 1 (10번째 질문 후 또는 버튼 클릭시 공개)
+          <textarea
+            style={{ ...inputStyle, minHeight: "120px" }}
+            value={hint1}
+            onChange={(e) => setHint1(e.target.value)}
+          />
+        </label>
+
+        <label>
+          힌트 2 (20번째 질문 후 또는 버튼 클릭시 공개)
+          <textarea
+            style={{ ...inputStyle, minHeight: "120px" }}
+            value={hint2}
+            onChange={(e) => setHint2(e.target.value)}
           />
         </label>
 
