@@ -1,0 +1,44 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'untold-frontend/**'
+
+env:
+  AWS_REGION: ap-northeast-2
+  S3_BUCKET: untold-frontend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Node.js 설치
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 의존성 설치
+        working-directory: ./untold-frontend
+        run: npm ci
+
+      - name: 빌드
+        working-directory: ./untold-frontend
+        run: npm run build
+
+      - name: AWS 인증
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: S3에 업로드
+        working-directory: ./untold-frontend
+        run: |
+          aws s3 sync dist/ s3://${{ env.S3_BUCKET }}/ --delete
