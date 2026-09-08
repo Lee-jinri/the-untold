@@ -117,6 +117,7 @@ public class CaseService {
 	    aCase.setDifficulty(request.getDifficulty());
 	    caseRepository.save(aCase);
 
+	    sessionKeywordRepository.deleteByGameSession_GameCase_Id(id);
 	    keywordRepository.deleteByGameCase_Id(id);
 	    List<Keyword> newKeywords = request.getKeywords().stream()
 	            .map(text -> {
