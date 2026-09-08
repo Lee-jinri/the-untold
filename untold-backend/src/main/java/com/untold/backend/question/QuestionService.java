@@ -32,12 +32,16 @@ public class QuestionService {
 		GameSession session = gameSessionRepository.findById(sessionId)
 				.orElseThrow(() -> new ResourceNotFoundException("세션을 찾을 수 없습니다."));
 		
-		String answer = llmService.ask(session.getGameCase().getFullTruth(), questionText);
+		List<Keyword> allKeywords = keywordRepository.findByGameCase_Id(session.getGameCase().getId());
+		List<String> keywordTexts = allKeywords.stream()
+				.map(Keyword::getKeywordText)
+				.collect(Collectors.toList());
+		LlmAnswer llmAnswer = llmService.ask(session.getGameCase().getFullTruth(), questionText, keywordTexts);
 		
 		Question question = new Question();
 		question.setGameSession(session);
 		question.setQuestionText(questionText);
-		question.setAiAnswer(answer);
+		question.setAiAnswer(llmAnswer.getAnswer());
 		questionRepository.save(question);
 		
 		session.setQuestionCount(session.getQuestionCount() + 1);
@@ -48,32 +52,35 @@ public class QuestionService {
 			session.setHintsRevealed(2);
 		}
 		
-		List<Keyword> allKeywords = keywordRepository.findByGameCase_Id(session.getGameCase().getId());
-		for (Keyword keyword : allKeywords) {
-			boolean alreadyUnlocked = sessionKeywordRepository
-					.existsByGameSession_idAndKeyword_id(sessionId, keyword.getId());
-			
-			if (!alreadyUnlocked && questionText.contains(keyword.getKeywordText())) {
-                SessionKeyword sessionKeyword = new SessionKeyword();
-                sessionKeyword.setGameSession(session);
-                sessionKeyword.setKeyword(keyword);
-                sessionKeywordRepository.save(sessionKeyword);
-            }
-		}
-		
-		List<String> unlockedKeywords = sessionKeywordRepository.findByGameSession_Id(sessionId).stream()
-		        .map(sk -> sk.getKeyword().getKeywordText())
-		        .collect(Collectors.toList());
+		for (String matchedKeywordText : llmAnswer.getMatchedKeywords()) {
+	        allKeywords.stream()
+	                .filter(k -> k.getKeywordText().equals(matchedKeywordText))
+	                .findFirst()
+	                .ifPresent(keyword -> {
+	                    boolean alreadyUnlocked = sessionKeywordRepository
+	                            .existsByGameSession_IdAndKeyword_Id(sessionId, keyword.getId());
+	                    if (!alreadyUnlocked) {
+	                        SessionKeyword sessionKeyword = new SessionKeyword();
+	                        sessionKeyword.setGameSession(session);
+	                        sessionKeyword.setKeyword(keyword);
+	                        sessionKeywordRepository.save(sessionKeyword);
+	                    }
+	                });
+	    }
 
-		boolean isSolved = unlockedKeywords.size() >= allKeywords.size();
+	    // 전부 해금됐는지 체크
+	    List<String> unlockedKeywords = sessionKeywordRepository.findByGameSession_Id(sessionId).stream()
+	            .map(sk -> sk.getKeyword().getKeywordText())
+	            .collect(Collectors.toList());
+	    boolean isSolved = unlockedKeywords.size() >= allKeywords.size();
 
-        if (isSolved && !session.isSolved()) {
-            session.setSolved(true);
-            session.setEndedAt(java.time.LocalDateTime.now());
-        }
+	    if (isSolved && !session.isSolved()) {
+	        session.setSolved(true);
+	        session.setEndedAt(java.time.LocalDateTime.now());
+	    }
 
-        gameSessionRepository.save(session);
+	    gameSessionRepository.save(session);
 
-        return new QuestionAnswerResponse(answer, unlockedKeywords, isSolved);
+	    return new QuestionAnswerResponse(llmAnswer.getAnswer(), unlockedKeywords, isSolved);
 	}
 }
