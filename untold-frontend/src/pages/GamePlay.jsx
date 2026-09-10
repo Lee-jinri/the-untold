@@ -101,6 +101,30 @@ function GamePlay() {
         </p>
         <div
           style={{
+            marginTop: "24px",
+            display: "flex",
+            justifyContent: "center",
+            gap: "8px",
+            flexWrap: "wrap",
+          }}
+        >
+          {progress.unlockedKeywords.map((keyword, i) => (
+            <span
+              key={i}
+              style={{
+                padding: "6px 14px",
+                border: "1px solid var(--amber)",
+                color: "var(--amber-light)",
+                fontSize: "0.85rem",
+                backgroundColor: "var(--bg-card)",
+              }}
+            >
+              {keyword}
+            </span>
+          ))}
+        </div>
+        <div
+          style={{
             marginTop: "32px",
             padding: "24px",
             border: "1px solid var(--border-color)",
