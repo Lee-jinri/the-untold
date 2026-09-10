@@ -10,7 +10,8 @@ AI와 대화하며 사건의 진실을 추리하는 텍스트 추리 게임입�
 ## 데모
 
 - **플레이**: http://untold-frontend.s3-website.ap-northeast-2.amazonaws.com
-- **관리자 페이지**: `/admin`
+- **관리자 페이지**: http://untold-frontend.s3-website.ap-northeast-2.amazonaws.com/admin  
+(사건 CRUD 테스트용 비밀번호: admin_password)
 
 ---
 
@@ -65,7 +66,7 @@ flowchart LR
 ```
 
 - **프론트엔드**: React를 정적 파일로 빌드해 S3 버킷에 호스팅
-- **백엔드**: Spring Boot를 Docker 이미지로 빌드해 ECR에 저장, ECS Fargate의 Rolling Update로 무중단 컨테이너 배포
+- **백엔드**: Spring Boot를 Docker 이미지로 빌드해 ECR에 저장, ECS(Fargate) 서비스에 Rolling Update 방식으로 무중단 배포
 - **로드밸런서**: ALB로 고정 진입점을 확보하고, 컨테이너 재시작/재배포에도 주소가 바뀌지 않도록 구성
 - **DB**: PostgreSQL RDS 사용 
 - **자동 배포**: GitHub Actions로 자동 빌드·배포
