@@ -1,11 +1,16 @@
 # The Untold (디 언톨드)
 
-AI와 대화하며 사건의 진실을 추리하는 텍스트 추리 게임입니다.
-플레이어는 사건 개요를 확인 후 자유롭게 질문을 던지며 AI 수사관으로부터 "예 / 아니오 / 상관없는 질문입니다" 답변을 받아 사건의 키워드를 하나씩 해금해 나갑니다. 피의게임X의 "미스터리 타임" 포맷에서 아이디어를 얻어 만들었습니다.
+AI와 대화하며 사건의 진실을 추리하는 텍스트 추리 게임입니다.<br>
+플레이어는 사건 개요를 확인 후 자유롭게 질문을 던지며 AI 수사관으로부터 "예 / 아니오 / 상관없는 질문입니다" 답변을 받아 사건의 키워드를 하나씩 해금해 나갑니다. <br>
+피의게임X의 "미스터리 타임" 포맷에서 아이디어를 얻어 만들었습니다.
+
+<br>
 
 > 개인 포트폴리오 프로젝트로, 기획부터 백엔드/프론트엔드 개발, LLM 연동, AWS 인프라 구축 및 CI/CD 파이프라인까지 전 과정을 직접 설계하고 구현했습니다.
 
----
+
+<br/>
+
 
 ## 데모
 
@@ -13,7 +18,9 @@ AI와 대화하며 사건의 진실을 추리하는 텍스트 추리 게임입�
 - **관리자 페이지**: http://untold-frontend.s3-website.ap-northeast-2.amazonaws.com/admin  
 (사건 CRUD 테스트용 비밀번호: admin_password)
 
----
+
+<br/>
+
 
 ## 주요 기능
 
@@ -32,7 +39,9 @@ AI와 대화하며 사건의 진실을 추리하는 텍스트 추리 게임입�
 - 사건 등록 / 목록 조회 / 수정 / 삭제 (CRUD)
 - 사건별 premise(표면 스토리), fullTruth(진실), 힌트 2단계, 키워드, 난이도 관리
 
----
+
+<br/>
+
 
 ## 기술 스택
 
@@ -46,7 +55,9 @@ AI와 대화하며 사건의 진실을 추리하는 텍스트 추리 게임입�
 | CI/CD | GitHub Actions |
 | 인증 | JWT (jjwt), Spring Security |
 
----
+
+<br/>
+
 
 ## 아키텍처
 
@@ -71,7 +82,9 @@ flowchart LR
 - **DB**: PostgreSQL RDS 사용 
 - **자동 배포**: GitHub Actions로 자동 빌드·배포
 
----
+
+<br/>
+
 
 ## 폴더 구조
 
@@ -96,7 +109,9 @@ the-untold/
     └── vite.config.js
 ```
 
----
+
+<br/>
+
 
 ## 데이터 모델 (ERD 요약)
 
@@ -108,9 +123,11 @@ the-untold/
 | `questions` | 세션별 질문/답변 기록 |
 | `session_keywords` | 세션별로 해금된 키워드 (N:M 연결) |
 
----
 
-## 핵심 구현 포인트
+<br/>
+
+
+## 핵심 구현
 
 ### 1. LLM 기반 질문 판정 및 키워드 해금
 
@@ -138,7 +155,9 @@ the-untold/
 - **S3 SPA 라우팅**: `/admin`처럼 실제 파일이 없는 경로로 직접 접근 시 404가 발생하는 문제 → 정적 웹 호스팅의 오류 문서를 `index.html`로 지정해 클라이언트 사이드 라우팅이 정상 동작하도록 처리
 - **Spring Security + CORS**: Security 도입 후 기존 `WebMvcConfigurer`의 CORS 설정이 무시되는 문제 → CORS 설정을 `SecurityFilterChain` 내부로 이동
 
----
+
+<br/>
+
 
 ## 로컬 실행 방법
 
@@ -163,7 +182,9 @@ npm run dev
 
 `.env` 파일에 `VITE_API_BASE_URL=http://localhost:8080` 설정 필요
 
----
+
+<br/>
+
 
 ## 환경 변수
 
@@ -177,7 +198,9 @@ npm run dev
 | `CORS_ALLOWED_ORIGIN` | 허용할 프론트엔드 origin |
 | `VITE_API_BASE_URL` | (프론트) 백엔드 API 주소 |
 
----
+
+<br/>
+
 
 ## 향후 개선 계획
 
