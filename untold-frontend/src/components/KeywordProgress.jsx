@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 function KeywordProgress({ unlockedKeywords, totalCount }) {
   const [displayedKeywords, setDisplayedKeywords] = useState(unlockedKeywords);
   const [flippingIndex, setFlippingIndex] = useState(null);
-  const [toast, setToast] = useState(null);
+  const [centerAlert, setCenterAlert] = useState(null);
   const prevCountRef = useRef(unlockedKeywords.length);
 
   useEffect(() => {
@@ -12,7 +12,7 @@ function KeywordProgress({ unlockedKeywords, totalCount }) {
       const newKeyword = unlockedKeywords[newIndex];
 
       setFlippingIndex(newIndex);
-      setToast(newKeyword);
+      setCenterAlert(newKeyword);
 
       const flipTimer = setTimeout(() => {
         setDisplayedKeywords(unlockedKeywords);
@@ -22,16 +22,16 @@ function KeywordProgress({ unlockedKeywords, totalCount }) {
         setFlippingIndex(null);
       }, 700);
 
-      const toastTimer = setTimeout(() => {
-        setToast(null);
-      }, 1800);
+      const centerAlertTimer = setTimeout(() => {
+        setCenterAlert(null);
+      }, 2000);
 
       prevCountRef.current = unlockedKeywords.length;
 
       return () => {
         clearTimeout(flipTimer);
         clearTimeout(flipEndTimer);
-        clearTimeout(toastTimer);
+        clearTimeout(centerAlertTimer);
       };
     } else {
       setDisplayedKeywords(unlockedKeywords);
@@ -54,35 +54,45 @@ function KeywordProgress({ unlockedKeywords, totalCount }) {
           40%  { box-shadow: 0 0 24px rgba(245, 166, 35, 0.9); }
           100% { box-shadow: 0 0 6px rgba(245, 166, 35, 0.3); }
         }
-        @keyframes toastPop {
-          0%   { opacity: 0; transform: translate(-50%, 10px) scale(0.9); }
-          15%  { opacity: 1; transform: translate(-50%, 0) scale(1.05); }
-          25%  { transform: translate(-50%, 0) scale(1); }
-          85%  { opacity: 1; }
-          100% { opacity: 0; transform: translate(-50%, -10px) scale(0.95); }
+        @keyframes centerAlertPop {
+          0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+          15%  { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+          25%  { transform: translate(-50%, -50%) scale(1); }
+          80%  { opacity: 1; }
+          100% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+        }
+        @keyframes shine {
+          0%   { background-position: -100% 0; }
+          100% { background-position: 200% 0; }
         }
         .keyword-flip {
           animation: cardFlip 0.7s ease-in-out, glowPulse 0.9s ease-out;
         }
       `}</style>
 
-      {toast && (
+      {centerAlert && (
         <div
           style={{
-            position: "absolute",
-            top: "-44px",
+            position: "fixed",
+            top: "50%",
             left: "50%",
-            transform: "translateX(-50%)",
-            backgroundColor: "var(--amber)",
+            transform: "translate(-50%, -50%)",
+            backgroundColor: "#b8791a",
+            backgroundImage:
+              "linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%)",
+            backgroundSize: "200% 100%",
             color: "var(--bg-primary)",
-            padding: "6px 16px",
-            fontSize: "0.8rem",
+            padding: "20px 40px",
+            fontSize: "1.1rem",
             fontWeight: "bold",
-            whiteSpace: "nowrap",
-            animation: "toastPop 1.8s ease-out forwards",
+            zIndex: 1000,
+            boxShadow: "0 0 30px rgba(245, 166, 35, 0.6)",
+            borderRadius: "12px",
+            animation:
+              "centerAlertPop 2s ease-out forwards, shine 1.2s ease-in-out",
           }}
         >
-          🔓 키워드 해금: {toast}
+          🔓 키워드 해금: {centerAlert}
         </div>
       )}
 
