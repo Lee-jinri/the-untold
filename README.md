@@ -61,6 +61,11 @@ AI와 대화하며 사건의 진실을 추리하는 텍스트 추리 게임입�
 
 ## 아키텍처
 
+<p align="center">
+  <img src="docs/images/architecture/untold_architecture.svg" width="60%">
+</p>
+
+
 ```mermaid
 flowchart LR
     User[사용자 브라우저] -->|정적 파일| S3[S3 정적 웹 호스팅<br/>React 빌드 결과물]
