@@ -34,4 +34,7 @@ public class Case extends BaseEntity {
 	
 	@Column(name = "hint2", columnDefinition = "TEXT")
 	private String hint2;
+	
+	@Column(name = "judgment_notes", columnDefinition = "TEXT")
+	private String judgmentNotes;
 }

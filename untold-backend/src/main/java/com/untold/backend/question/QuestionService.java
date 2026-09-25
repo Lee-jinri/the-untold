@@ -36,7 +36,12 @@ public class QuestionService {
 		List<String> keywordTexts = allKeywords.stream()
 				.map(Keyword::getKeywordText)
 				.collect(Collectors.toList());
-		LlmAnswer llmAnswer = llmService.ask(session.getGameCase().getFullTruth(), questionText, keywordTexts);
+		LlmAnswer llmAnswer = llmService.ask(
+				session.getGameCase().getFullTruth(), 
+				questionText, 
+				keywordTexts,
+				session.getGameCase().getJudgmentNotes()
+		);
 		
 		Question question = new Question();
 		question.setGameSession(session);
