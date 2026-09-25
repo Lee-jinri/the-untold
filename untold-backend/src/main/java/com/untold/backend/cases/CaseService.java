@@ -1,5 +1,6 @@
 package com.untold.backend.cases;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -27,7 +28,7 @@ public class CaseService {
 	private final KeywordRepository keywordRepository;
 	private final GameSessionRepository gameSessionRepository;
     private final QuestionRepository questionRepository;
-    private final SessionKeywordRepository sessionKeywordRepository; 
+    private final SessionKeywordRepository sessionKeywordRepository;
 	
 	public Case createCase(CaseCreateRequest request) {
 		Case newCase = new Case();
@@ -37,17 +38,25 @@ public class CaseService {
         newCase.setDifficulty(request.getDifficulty());
         newCase.setHint1(request.getHint1());
         newCase.setHint2(request.getHint2());
+        newCase.setJudgmentNotes(request.getJudgmentNotes());
         
         Case savedCase = caseRepository.save(newCase);
-		
-        List<Keyword> keywords = request.getKeywords().stream()
-                .map(text -> {
-                    Keyword keyword = new Keyword();
-                    keyword.setGameCase(savedCase);
-                    keyword.setKeywordText(text);
-                    return keyword;
-                })
-                .collect(Collectors.toList());
+        
+        List<String> keywordTexts = request.getKeywords();
+        List<String> expandedTexts = request.getExpandedTexts();
+		        
+        List<Keyword> keywords = new ArrayList<>();
+        for (int i = 0; i < keywordTexts.size(); i++) {
+            String text = keywordTexts.get(i);
+            String expandedText = expandedTexts.get(i);
+            
+            Keyword keyword = new Keyword();
+            keyword.setGameCase(newCase);
+            keyword.setKeywordText(text);
+            keyword.setExpandedText(expandedText); // 관리자 화면에 보여줄 용도
+            
+            keywords.add(keyword);
+        }
         keywordRepository.saveAll(keywords);
 
         return savedCase;
@@ -85,10 +94,8 @@ public class CaseService {
 	public List<CaseAdminResponse> getAllCasesForAdmin() {
 		return caseRepository.findAll().stream()
 	            .map(c -> {
-	                List<String> keywords = keywordRepository.findByGameCase_Id(c.getId()).stream()
-	                        .map(Keyword::getKeywordText)
-	                        .collect(Collectors.toList());
-	                return new CaseAdminResponse(c, keywords);
+	            	List<Keyword> keywordEntities = keywordRepository.findByGameCase_Id(c.getId());
+	                return new CaseAdminResponse(c, keywordEntities);
 	            })
 	            .collect(Collectors.toList());
 	}
@@ -97,11 +104,9 @@ public class CaseService {
 		Case aCase = caseRepository.findById(id)
 	            .orElseThrow(() -> new ResourceNotFoundException("사건을 찾을 수 없습니다: " + id));
 
-	    List<String> keywords = keywordRepository.findByGameCase_Id(id).stream()
-	            .map(Keyword::getKeywordText)
-	            .collect(Collectors.toList());
+		List<Keyword> keywordEntities = keywordRepository.findByGameCase_Id(id);
 
-	    return new CaseAdminResponse(aCase, keywords);
+	    return new CaseAdminResponse(aCase, keywordEntities);
 	}
 
 	@Transactional
@@ -115,20 +120,30 @@ public class CaseService {
 	    aCase.setHint1(request.getHint1());
 	    aCase.setHint2(request.getHint2());
 	    aCase.setDifficulty(request.getDifficulty());
+	    aCase.setJudgmentNotes(request.getJudgmentNotes());
+	    System.out.println("------------------------------");
+	    System.out.println(request.getJudgmentNotes());
 	    caseRepository.save(aCase);
 
-	    sessionKeywordRepository.deleteByGameSession_GameCase_Id(id);
-	    keywordRepository.deleteByGameCase_Id(id);
-	    List<Keyword> newKeywords = request.getKeywords().stream()
-	            .map(text -> {
-	                Keyword keyword = new Keyword();
-	                keyword.setGameCase(aCase);
-	                keyword.setKeywordText(text);
-	                return keyword;
-	            })
-	            .collect(Collectors.toList());
-	    keywordRepository.saveAll(newKeywords);
+        sessionKeywordRepository.deleteByGameSession_GameCase_Id(id);
+        keywordRepository.deleteByGameCase_Id(id);
+        
+	    List<String> keywordTexts = request.getKeywords();
+        List<String> expandedTexts = request.getExpandedTexts();
 
+        List<Keyword> newKeywords = new ArrayList<>();
+        for (int i = 0; i < keywordTexts.size(); i++) {
+            String text = keywordTexts.get(i);
+            String expandedText = expandedTexts.get(i);
+
+            Keyword keyword = new Keyword();
+            keyword.setGameCase(aCase);
+            keyword.setKeywordText(text);
+            keyword.setExpandedText(expandedText);
+            
+            newKeywords.add(keyword);
+        }
+        keywordRepository.saveAll(newKeywords);
 	    return aCase;
 	}
 }

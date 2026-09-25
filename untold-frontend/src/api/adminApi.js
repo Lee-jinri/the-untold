@@ -64,3 +64,16 @@ export async function createCaseAdmin(caseData) {
   if (!response.ok) throw new Error("사건 등록에 실패했어요");
   return response.json();
 }
+
+export async function expandKeywords(keywords) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/cases/expand-keywords`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(keywords),
+    }
+  );
+  if (!response.ok) throw new Error("키워드 확장에 실패했어요");
+  return response.json();
+}

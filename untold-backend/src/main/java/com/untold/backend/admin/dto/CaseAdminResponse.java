@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.untold.backend.cases.Case;
 import com.untold.backend.cases.Difficulty;
+import com.untold.backend.cases.Keyword;
 
 import lombok.Getter;
 
@@ -18,8 +19,10 @@ public class CaseAdminResponse {
     private final String hint2;
     private final Difficulty difficulty;
     private final List<String> keywords;
+    private final List<String> expandedTexts;
+    private final String judgmentNotes;
 
-    public CaseAdminResponse(Case aCase, List<String> keywords) {
+    public CaseAdminResponse(Case aCase, List<Keyword> keywordEntities) {
         this.id = aCase.getId();
         this.title = aCase.getTitle();
         this.premise = aCase.getPremise();
@@ -27,6 +30,12 @@ public class CaseAdminResponse {
         this.hint1 = aCase.getHint1();
         this.hint2 = aCase.getHint2();
         this.difficulty = aCase.getDifficulty();
-        this.keywords = keywords;
+        this.keywords = keywordEntities.stream()
+                .map(Keyword::getKeywordText)
+                .collect(java.util.stream.Collectors.toList());
+        this.expandedTexts = keywordEntities.stream()
+                .map(Keyword::getExpandedText)
+                .collect(java.util.stream.Collectors.toList());
+        this.judgmentNotes = aCase.getJudgmentNotes();
     }
 }

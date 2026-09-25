@@ -17,4 +17,6 @@ public class CaseUpdateRequest {
     private String hint2;
     private Difficulty difficulty;
     private List<String> keywords;
+	private List<String> expandedTexts;
+	private String judgmentNotes;
 }

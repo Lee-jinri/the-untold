@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createCaseAdmin } from "../api/adminApi";
+import { createCaseAdmin, expandKeywords } from "../api/adminApi";
 
 function CaseCreate() {
   const navigate = useNavigate();
@@ -11,8 +11,11 @@ function CaseCreate() {
   const [hint2, setHint2] = useState("");
   const [difficulty, setDifficulty] = useState("NORMAL");
   const [keywordsText, setKeywordsText] = useState("");
+  const [expandedTexts, setExpandedTexts] = useState([]);
+  const [expanding, setExpanding] = useState(false);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [judgmentNotes, setJudgmentNotes] = useState("");
 
   useEffect(() => {
     if (!sessionStorage.getItem("adminToken")) {
@@ -20,8 +23,44 @@ function CaseCreate() {
       return;
     }
   }, []);
+
+  const keywordsArray = keywordsText
+    .split(",")
+    .map((k) => k.trim())
+    .filter((k) => k.length > 0);
+
+  const handleExpand = async () => {
+    if (keywordsArray.length === 0) return;
+    setExpanding(true);
+    setError(null);
+    try {
+      const result = await expandKeywords(keywordsArray);
+      // result는 { "지하실": "지하실, 밀폐된...", "가스": "..." } 형태
+      const ordered = keywordsArray.map((kw) => result[kw] || kw);
+      setExpandedTexts(ordered);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setExpanding(false);
+    }
+  };
+
+  const handleExpandedTextChange = (index, value) => {
+    setExpandedTexts((prev) => {
+      const updated = [...prev];
+      updated[index] = value;
+      return updated;
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (expandedTexts.length !== keywordsArray.length) {
+      setError('먼저 "키워드 확장" 버튼을 눌러주세요.');
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
 
@@ -38,9 +77,11 @@ function CaseCreate() {
         hint1,
         hint2,
         difficulty,
-        keywords,
+        keywords: keywordsArray,
+        expandedTexts,
+        judgmentNotes,
       });
-      navigate(`/admin/cases`);
+      navigate("/admin/cases");
     } catch (err) {
       setError(err.message);
       setSubmitting(false);
@@ -111,6 +152,16 @@ function CaseCreate() {
         </label>
 
         <label>
+          판정 주의사항 (AI가 헷갈릴 만한 포인트를 미리 알려주세요)
+          <textarea
+            style={{ ...inputStyle, minHeight: "100px" }}
+            value={judgmentNotes}
+            onChange={(e) => setJudgmentNotes(e.target.value)}
+            placeholder="예: '형제가 있냐'는 질문만으로는 '쌍둥이' 키워드를 인정하지 마세요."
+          />
+        </label>
+
+        <label>
           난이도
           <select
             style={inputStyle}
@@ -128,11 +179,44 @@ function CaseCreate() {
           <input
             style={inputStyle}
             value={keywordsText}
-            onChange={(e) => setKeywordsText(e.target.value)}
-            placeholder="지하실, 가스, 도둑, 공범, 시체"
+            onChange={(e) => {
+              setKeywordsText(e.target.value);
+              setExpandedTexts([]); // 키워드 바뀌면 확장 결과 초기화
+            }}
+            placeholder="지하실, 가스, 도둑"
             required
           />
         </label>
+
+        <button
+          type="button"
+          onClick={handleExpand}
+          disabled={expanding || keywordsArray.length === 0}
+        >
+          {expanding ? "확장 중..." : "키워드 확장"}
+        </button>
+
+        {expandedTexts.length > 0 && (
+          <div style={{ marginTop: "16px" }}>
+            <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+              확장된 키워드 (필요시 수정)
+            </p>
+            {keywordsArray.map((kw, i) => (
+              <div key={i} style={{ marginTop: "10px" }}>
+                <label
+                  style={{ fontSize: "0.8rem", color: "var(--amber-light)" }}
+                >
+                  {kw}
+                </label>
+                <textarea
+                  style={{ ...inputStyle, minHeight: "60px", marginTop: "4px" }}
+                  value={expandedTexts[i] || ""}
+                  onChange={(e) => handleExpandedTextChange(i, e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
         {error && <p style={{ color: "var(--amber)" }}>{error}</p>}
 

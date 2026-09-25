@@ -17,4 +17,6 @@ public class CaseCreateRequest {
     private List<String> keywords;
     private String hint1;
     private String hint2;
+    private List<String> expandedTexts;
+    private String judgmentNotes;
 }

@@ -24,4 +24,7 @@ public class Keyword extends BaseEntity{
 	
 	@Column(name = "keyword_text", nullable = false)
 	private String keywordText;
+	
+	@Column(name = "expanded_text", columnDefinition = "TEXT")
+    private String expandedText;
 }
