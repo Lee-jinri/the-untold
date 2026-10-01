@@ -65,22 +65,6 @@ AI와 대화하며 사건의 진실을 추리하는 텍스트 추리 게임입�
   <img src="docs/images/architecture/untold_architecture.svg" width="60%">
 </p>
 
-
-```mermaid
-flowchart LR
-    User[사용자 브라우저] -->|정적 파일| S3[S3 정적 웹 호스팅<br/>React 빌드 결과물]
-    User -->|API 요청| ALB[Application Load Balancer]
-    ALB --> ECS[ECS Fargate<br/>Spring Boot 컨테이너]
-    ECS --> RDS[(RDS PostgreSQL)]
-    ECS --> Claude[Anthropic Claude API]
-
-    subgraph CI/CD
-    GH[GitHub Actions] -->|Docker Build & Push| ECR[ECR]
-    ECR --> ECS
-    GH -->|Build & Sync| S3
-    end
-```
-
 - **프론트엔드**: React를 정적 파일로 빌드해 S3 버킷에 호스팅
 - **백엔드**: Spring Boot를 Docker 이미지로 빌드해 ECR에 저장, ECS(Fargate) 서비스에 Rolling Update 방식으로 무중단 배포
 - **로드밸런서**: ALB로 고정 진입점을 확보하고, 컨테이너 재시작/재배포에도 주소가 바뀌지 않도록 구성
@@ -173,7 +157,7 @@ the-untold/
 ## 로컬 실행 방법
 
 ### 사전 준비
-- Java 21, Node.js 20+, PostgreSQL, Anthropic API Key
+- Java, Node.js, PostgreSQL, Anthropic API Key
 
 ### 백엔드
 
@@ -215,7 +199,6 @@ npm run dev
 
 ## 향후 개선 계획
 
-- [ ] pgvector 임베딩 유사도 검색으로 키워드 판정 정확도 개선
 - [ ] 사건 목록 페이지네이션
 - [ ] 방문 통계, 세션 로그 등 관리자 대시보드
 - [ ] 사용자 계정 및 랭킹 시스템
